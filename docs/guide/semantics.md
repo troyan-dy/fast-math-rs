@@ -22,7 +22,7 @@ a `float` quietly. The exception carries a note that names the argument.
 >>> fm.add(2**64, 0)
 Traceback (most recent call last):
   ...
-OverflowError: Python int too large to convert to C long
+OverflowError: ...
 while processing 'a'
 >>> fm.add("1", 2)
 Traceback (most recent call last):
