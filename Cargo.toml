@@ -1,0 +1,41 @@
+[package]
+name = "fast-math"
+# The version of the package lives in pyproject.toml, which maturin reads; the crate is never published
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT"
+publish = false
+
+[lib]
+name = "_core"
+# cdylib: the Python extension; rlib: what `cargo test` links the unit tests of the pure Rust core against
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# abi3-py311: one wheel per platform for every CPython from 3.11 on; free-threaded builds get a wheel of
+# their own, since the stable ABI does not cover them (ADR-0004)
+pyo3 = { version = "0.30.1", features = ["abi3-py311"], optional = true }
+
+[features]
+# The Python extension; off for `cargo test`, which needs no interpreter then. [tool.maturin] turns it on
+python = ["dep:pyo3"]
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+strip = true
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+# The core casts between i64, u64 and f64 on purpose, each cast follows the semantics of Python
+cast_possible_truncation = "allow"
+cast_possible_wrap = "allow"
+cast_precision_loss = "allow"
+cast_sign_loss = "allow"
+float_cmp = "allow"
+# Every error of the core is a Python exception, documented in the stubs of python/fast_math/_core.pyi
+missing_errors_doc = "allow"

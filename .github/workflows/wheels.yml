@@ -1,0 +1,99 @@
+name: Wheels
+
+# The wheels of every release target and the sdist, as artifacts named wheels-*; called by CI on a pull request
+# and by Release. Each target builds an abi3 wheel for CPython 3.11+ and one for free-threaded 3.14t (ADR-0004),
+# and a target the runner can run imports both before they are uploaded.
+on:
+  workflow_call:
+
+jobs:
+  linux:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: ubuntu-latest, target: x86_64, platform: manylinux_2_28, smoke: true }
+          - { runner: ubuntu-24.04-arm, target: aarch64, platform: manylinux_2_28, smoke: true }
+          - { runner: ubuntu-latest, target: x86_64, platform: musllinux_1_2, smoke: false }
+          - { runner: ubuntu-24.04-arm, target: aarch64, platform: musllinux_1_2, smoke: false }
+    steps:
+      - uses: actions/checkout@v5
+      - uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          manylinux: ${{ matrix.platform }}
+          args: --release --out dist --interpreter 3.11 3.14t
+      - uses: astral-sh/setup-uv@v6
+        if: matrix.smoke
+      - name: Import the wheels
+        if: matrix.smoke
+        shell: bash
+        run: scripts/smoke.sh dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-linux-${{ matrix.target }}-${{ matrix.platform }}
+          path: dist
+
+  macos:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: macos-15-intel, target: x86_64 }
+          - { runner: macos-latest, target: aarch64 }
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: |
+            3.11
+            3.14t
+      - uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --out dist --interpreter 3.11 3.14t
+      - uses: astral-sh/setup-uv@v6
+      - name: Import the wheels
+        shell: bash
+        run: scripts/smoke.sh dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-macos-${{ matrix.target }}
+          path: dist
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: |
+            3.11
+            3.14t
+      - uses: PyO3/maturin-action@v1
+        with:
+          target: x64
+          args: --release --out dist --interpreter 3.11 3.14t
+      - uses: astral-sh/setup-uv@v6
+      - name: Import the wheels
+        shell: bash
+        run: scripts/smoke.sh dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-windows-x64
+          path: dist
+
+  sdist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: --out dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-sdist
+          path: dist

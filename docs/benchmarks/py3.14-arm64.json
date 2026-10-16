@@ -1,0 +1,56 @@
+{
+  "python": "3.14.6 (main, Jun 11 2026, 03:55:33) [Clang 22.1.3 ]",
+  "machine": "arm64",
+  "system": "Darwin",
+  "results": [
+    {
+      "name": "add(2, 3)",
+      "baseline": "operator.add",
+      "fast_us": 0.048342038562494416,
+      "baseline_us": 0.026344460898801346,
+      "speedup": 0.5449596600016031
+    },
+    {
+      "name": "pow(3, 39)",
+      "baseline": "operator.pow",
+      "fast_us": 0.06445324955959124,
+      "baseline_us": 0.1107577710302204,
+      "speedup": 1.7184202780624367
+    },
+    {
+      "name": "gcd(2**40, 6**15)",
+      "baseline": "math.gcd",
+      "fast_us": 0.07202478955901387,
+      "baseline_us": 0.062174591371212916,
+      "speedup": 0.8632387786467582
+    },
+    {
+      "name": "factorial(20)",
+      "baseline": "math.factorial",
+      "fast_us": 0.05058184897978018,
+      "baseline_us": 0.030834107361327794,
+      "speedup": 0.6095883796903818
+    },
+    {
+      "name": "fibonacci(90)",
+      "baseline": "Python loop",
+      "fast_us": 0.06628760683410562,
+      "baseline_us": 1.6207352058106785,
+      "speedup": 24.450048556841164
+    },
+    {
+      "name": "is_prime, 1000 numbers ~10**18",
+      "baseline": "Python Miller-Rabin",
+      "fast_us": 895.6056711188442,
+      "baseline_us": 4937.823975342326,
+      "speedup": 5.5133906970170266
+    },
+    {
+      "name": "primes_up_to(10**6)",
+      "baseline": "Python sieve",
+      "fast_us": 2208.347689722561,
+      "baseline_us": 19848.275010008365,
+      "speedup": 8.98783968773592
+    }
+  ]
+}
