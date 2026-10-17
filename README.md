@@ -1,9 +1,9 @@
-# fast-math
+# fast-math-rs
 
-[![PyPI](https://img.shields.io/pypi/v/fast-math)](https://pypi.org/project/fast-math/)
-[![Python](https://img.shields.io/pypi/pyversions/fast-math)](https://pypi.org/project/fast-math/)
+[![PyPI](https://img.shields.io/pypi/v/fast-math-rs)](https://pypi.org/project/fast-math-rs/)
+[![Python](https://img.shields.io/pypi/pyversions/fast-math-rs)](https://pypi.org/project/fast-math-rs/)
 [![CI](https://github.com/troyan-dy/fast_math/actions/workflows/ci.yml/badge.svg)](https://github.com/troyan-dy/fast_math/actions/workflows/ci.yml)
-[![License](https://img.shields.io/pypi/l/fast-math)](LICENSE)
+[![License](https://img.shields.io/pypi/l/fast-math-rs)](LICENSE)
 
 Arithmetic and number theory on Python numbers, implemented in Rust.
 
@@ -19,8 +19,11 @@ CPython from 3.11 on, and runs without the GIL on free-threaded Python.
 ## Installation
 
 ```bash
-pip install fast-math
+pip install fast-math-rs
 ```
+
+The distribution is `fast-math-rs` (PyPI keeps `fast-math` for the older `fastmath`); the module it installs
+is `fast_math`.
 
 Requires CPython 3.11+. Wheels: Linux (x86_64, aarch64; glibc and musl), macOS (x86_64, arm64) and Windows
 (x64), each an abi3 wheel plus one for free-threaded CPython 3.14t. Elsewhere pip builds the sdist, which needs

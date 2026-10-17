@@ -1,4 +1,4 @@
-# fast-math
+# fast-math-rs
 
 Arithmetic and number theory on Python numbers, computed by a Rust core.
 

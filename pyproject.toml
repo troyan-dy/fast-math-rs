@@ -1,5 +1,5 @@
 [project]
-name = "fast-math"
+name = "fast-math-rs"
 version = "0.1.0"
 description = "Arithmetic and number theory on Python numbers, implemented in Rust"
 readme = "README.md"

@@ -43,4 +43,4 @@ __all__ = [
     "sub",
 ]
 
-__version__ = _version("fast-math")
+__version__ = _version("fast-math-rs")

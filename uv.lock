@@ -199,7 +199,7 @@ toml = [
 ]
 
 [[package]]
-name = "fast-math"
+name = "fast-math-rs"
 version = "0.1.0"
 source = { editable = "." }
 
