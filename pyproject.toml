@@ -1,0 +1,119 @@
+[project]
+name = "fast-math-rs"
+version = "0.1.0"
+description = "Arithmetic and number theory on Python numbers, implemented in Rust"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Dmitriy Troyan" }]
+requires-python = ">=3.11"
+dependencies = []
+keywords = [
+  "math",
+  "arithmetic",
+  "number-theory",
+  "primes",
+  "gcd",
+  "rust",
+  "pyo3",
+  "maturin",
+  "free-threading",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: Free Threading :: 3 - Stable",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Rust",
+  "Topic :: Scientific/Engineering :: Mathematics",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/troyan-dy/fast_math"
+Repository = "https://github.com/troyan-dy/fast_math"
+Issues = "https://github.com/troyan-dy/fast_math/issues"
+Changelog = "https://github.com/troyan-dy/fast_math/blob/master/CHANGELOG.md"
+
+[dependency-groups]
+dev = [
+  "hypothesis>=6.120",
+  "mypy>=1.13",
+  "pytest>=8.3",
+  "pytest-cov>=6.0",
+  "ruff>=0.8",
+]
+
+[build-system]
+requires = ["maturin>=1.15,<2"]
+build-backend = "maturin"
+
+[tool.maturin]
+# The Rust extension is fast_math._core next to the Python sources of python/fast_math
+python-source = "python"
+module-name = "fast_math._core"
+features = ["python"]
+# `uv sync` builds the extension too, and the benchmarks measure what users install
+profile = "release"
+# The sdist carries what builds and tests the package; the notes for coding agents stay in the repository
+exclude = [
+  { path = "CLAUDE.md", format = "sdist" },
+  { path = "docs/agents/**", format = "sdist" },
+  { path = "docs/adr/**", format = "sdist" },
+]
+
+[tool.uv]
+# Rebuild the extension on `uv sync` / `uv run` whenever the Rust sources change
+cache-keys = [{ file = "pyproject.toml" }, { file = "Cargo.toml" }, { file = "Cargo.lock" }, { file = "src/**/*.rs" }]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "N", "B", "A", "UP", "S", "RUF", "PYI"]
+ignore = ["S101"]
+
+[tool.ruff.lint.per-file-ignores]
+# abs, pow and mod are the names of the operations, as in `operator`. The stub of the extension keeps its
+# docstrings: an IDE has no other source for them
+"python/fast_math/*" = ["A001", "A004", "PYI021"]
+# `int | float` says what a test feeds in, though `float` would accept an int too
+"tests/*" = ["PYI041"]
+"benchmarks/*" = ["PYI041"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["fast_math", "tests"]
+
+[tool.mypy]
+files = ["python", "tests", "scripts", "benchmarks"]
+strict = true
+
+[tool.pyright]
+# Run from uvx, outside the project environment, so it is pointed at the venv of `uv sync`
+include = ["python", "tests", "benchmarks"]
+pythonVersion = "3.11"
+typeCheckingMode = "standard"
+venvPath = "."
+venv = ".venv"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers"
+
+[tool.coverage.run]
+source = ["fast_math"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 100
