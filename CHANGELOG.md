@@ -13,6 +13,8 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
 - The dev dependencies are raised to their current releases (hypothesis 6.170, mypy 2.4, pytest 9.1,
   pytest-cov 7.1, ruff 0.17), and CI to the current majors of its actions (checkout v7, setup-python v7,
   setup-uv v10, upload-artifact v7, download-artifact v8). The package itself is unchanged.
+- The Python code of the repository is checked by wemake-python-styleguide too (`flake8 --select=WPS`, configured
+  in `setup.cfg`); the tests, the benchmarks and the release script are adjusted to it, the package is unchanged.
 - A SessionStart hook in `.claude/` installs the dev dependencies in a Claude Code cloud session.
 
 ## [0.1.0] - 2026-10-17

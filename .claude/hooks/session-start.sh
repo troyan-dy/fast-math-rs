@@ -16,6 +16,9 @@ fi
 # Builds fast_math._core too; a no-op when the lock and the Rust sources are unchanged
 uv sync --locked
 
+# wemake-python-styleguide comes with the dev dependencies: `make lint` runs it as a flake8 plugin
+uv run python -c "import wemake_python_styleguide"
+
 # The pin of the Makefile; the first run fetches pyright and its Node runtime
 uvx "$(sed -n 's/^PYRIGHT := //p' Makefile)" --version
 
