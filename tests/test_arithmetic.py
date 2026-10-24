@@ -15,14 +15,14 @@ from tests.reference import I64_MAX, I64_MIN, expected, int64s, numbers, outcome
 
 Binary = Callable[[Any, Any], Any]
 
-BINARY: list[tuple[Binary, Binary]] = [
+BINARY: tuple[tuple[Binary, Binary], ...] = (
     (fast_math.add, operator.add),
     (fast_math.sub, operator.sub),
     (fast_math.mul, operator.mul),
     (fast_math.div, operator.truediv),
     (fast_math.floordiv, operator.floordiv),
     (fast_math.mod, operator.mod),
-]
+)
 
 
 @pytest.mark.parametrize(("operation", "reference"), BINARY, ids=lambda f: getattr(f, "__name__", ""))

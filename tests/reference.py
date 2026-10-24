@@ -13,9 +13,11 @@ I64_MAX = 2**63 - 1
 
 # The value of a call, or the type of the exception it raised
 Outcome = object | type[BaseException]
+# What a call may raise instead of giving a value
+RAISED = (ArithmeticError, ValueError, TypeError, MemoryError)
 
 # Where 64-bit arithmetic and the conversion to a float break first
-EDGES = [0, 1, -1, 2, -2, 3, I64_MIN, I64_MAX, I64_MIN + 1, I64_MAX - 1, 2**31, 2**32, 2**53, 2**53 + 1, -(2**53) - 1]
+EDGES = (0, 1, -1, 2, -2, 3, I64_MIN, I64_MAX, I64_MIN + 1, I64_MAX - 1, 2**31, 2**32, 2**53, 2**53 + 1, -(2**53) - 1)
 
 int64s = st.one_of(st.integers(I64_MIN, I64_MAX), st.sampled_from(EDGES), st.integers(-1000, 1000))
 small_floats = st.floats(-1e6, 1e6).map(lambda x: round(x, 2))
@@ -26,7 +28,7 @@ numbers = st.one_of(int64s, floats, st.booleans())
 def outcome(call: Callable[[], object]) -> Outcome:
     try:
         return call()
-    except (ArithmeticError, ValueError, TypeError, MemoryError) as error:
+    except RAISED as error:
         return type(error)
 
 
@@ -34,13 +36,13 @@ def expected(call: Callable[[], object]) -> Outcome:
     """
     The outcome of the Python reference, as the 64-bit core has it.
     """
-    result = outcome(call)
-    if isinstance(result, complex):
+    reference = outcome(call)
+    if isinstance(reference, complex):
         # A negative base to a fractional power: math.pow() raises, as the core does
         return ValueError
-    if isinstance(result, int) and not isinstance(result, bool) and not I64_MIN <= result <= I64_MAX:
+    if isinstance(reference, int) and not isinstance(reference, bool) and not I64_MIN <= reference <= I64_MAX:
         return OverflowError
-    return result
+    return reference
 
 
 def same(actual: Outcome, reference: Outcome) -> bool:

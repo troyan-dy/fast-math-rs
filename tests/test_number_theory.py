@@ -14,8 +14,8 @@ def sieve(n: int) -> list[int]:
     composite = bytearray(n + 1)
     for i in range(2, math.isqrt(n) + 1):
         if not composite[i]:
-            composite[i * i :: i] = b"\x01" * len(range(i * i, n + 1, i))
-    return [i for i in range(2, n + 1) if not composite[i]]
+            composite[i * i :: i] = b"\x01" * len(range(i * i, n + 1, i))  # noqa: WPS362 - the sieve idiom
+    return [candidate for candidate in range(2, n + 1) if not composite[candidate]]
 
 
 SMALL_PRIMES = sieve(100_000)
@@ -60,7 +60,7 @@ def test_fibonacci(n: int) -> None:
     assert same(outcome(lambda: fast_math.fibonacci(n)), reference)
 
 
-def test_is_prime_up_to_100_000() -> None:
+def test_is_prime_up_to_a_hundred_thousand() -> None:
     assert [n for n in range(-100, 100_001) if fast_math.is_prime(n)] == SMALL_PRIMES
 
 
@@ -70,10 +70,10 @@ def test_products_of_two_primes_are_composite(p: int, q: int) -> None:
 
 
 # Mersenne primes, the largest primes below 2**32 and 2**63, and 10**18 + 3
-LARGE_PRIMES = [2**31 - 1, 2**61 - 1, 4_294_967_291, 9_223_372_036_854_775_783, 10**18 + 3]
+LARGE_PRIMES = (2**31 - 1, 2**61 - 1, 4_294_967_291, 9_223_372_036_854_775_783, 10**18 + 3)
 # Carmichael numbers, strong pseudoprimes to base 2, one to every base up to 23, and 2**63 - 1
-PSEUDOPRIMES = [561, 1105, 1729, 41041, 825_265, 321_197_185, 5_394_826_801, 232_250_619_601, 9_746_347_772_161]
-STRONG_PSEUDOPRIMES = [2047, 3277, 4033, 4681, 8321, 3_825_123_056_546_413_051, I64_MAX]
+PSEUDOPRIMES = (561, 1105, 1729, 41041, 825_265, 321_197_185, 5_394_826_801, 232_250_619_601, 9_746_347_772_161)
+STRONG_PSEUDOPRIMES = (2047, 3277, 4033, 4681, 8321, 3_825_123_056_546_413_051, I64_MAX)
 
 
 @pytest.mark.parametrize("n", LARGE_PRIMES)

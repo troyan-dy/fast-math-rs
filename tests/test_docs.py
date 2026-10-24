@@ -26,8 +26,8 @@ def ids(path: Path) -> str:
 
 @pytest.mark.parametrize("path", DOCUMENTS, ids=ids)
 def test_examples(path: Path) -> None:
-    result = doctest.testfile(str(path), module_relative=False, optionflags=doctest.ELLIPSIS, verbose=False)
-    assert result.failed == 0
+    report = doctest.testfile(str(path), module_relative=False, optionflags=doctest.ELLIPSIS, verbose=False)
+    assert report.failed == 0
 
 
 def anchor(heading: str) -> str:
@@ -39,13 +39,17 @@ def prose(text: str) -> str:
     return re.sub(r"^```.*?^```", "", text, flags=re.MULTILINE | re.DOTALL)
 
 
+def anchors(path: Path) -> set[str]:
+    headings = re.findall(r"^#+ (.+)$", prose(path.read_text(encoding="utf-8")), flags=re.MULTILINE)
+    return {anchor(heading) for heading in headings}
+
+
 @pytest.mark.parametrize("path", DOCUMENTS, ids=ids)
 def test_links(path: Path) -> None:
     text = prose(path.read_text(encoding="utf-8"))
     for link in re.findall(r"\]\((?![a-z]+:)([^)\s]+)\)", text):
         target, _, fragment = link.partition("#")
-        file = (path.parent / target).resolve() if target else path
-        assert file.exists(), f"{link} in {ids(path)}: no such file"
-        if fragment and file.suffix == ".md":
-            headings = re.findall(r"^#+ (.+)$", prose(file.read_text(encoding="utf-8")), flags=re.MULTILINE)
-            assert fragment in {anchor(heading) for heading in headings}, f"{link} in {ids(path)}: no such heading"
+        target_file = (path.parent / target).resolve() if target else path
+        assert target_file.exists(), f"{link} in {ids(path)}: no such file"
+        if fragment and target_file.suffix == ".md":
+            assert fragment in anchors(target_file), f"{link} in {ids(path)}: no such heading"
