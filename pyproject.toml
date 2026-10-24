@@ -1,6 +1,6 @@
 [project]
 name = "fast-math-rs"
-version = "0.1.0"
+version = "0.1.1"
 description = "Arithmetic and number theory on Python numbers, implemented in Rust"
 readme = "README.md"
 license = "MIT"
@@ -46,11 +46,11 @@ Changelog = "https://github.com/troyan-dy/fast_math/blob/master/CHANGELOG.md"
 
 [dependency-groups]
 dev = [
-  "hypothesis>=6.120",
-  "mypy>=1.13",
-  "pytest>=8.3",
-  "pytest-cov>=6.0",
-  "ruff>=0.8",
+  "hypothesis>=6.170",
+  "mypy>=2.4",
+  "pytest>=9.1",
+  "pytest-cov>=7.1",
+  "ruff>=0.17",
 ]
 
 [build-system]
