@@ -36,7 +36,8 @@ Python counterpart. `stubtest` fails when the stub and the module disagree, and
 
 ## Checks
 
-- Python: `ruff check`, `ruff format --check`, `mypy` (strict), `pyright`, `stubtest fast_math`.
+- Python: `ruff check`, `ruff format --check`, `flake8 --select=WPS` (wemake-python-styleguide, `setup.cfg`),
+  `mypy` (strict), `pyright`, `stubtest fast_math`.
 - Rust: `cargo fmt --check`, `cargo clippy --all-targets --all-features -- -D warnings` with the pedantic
   lints, `cargo test`.
 - Coverage of the Python package is 100%, and CI fails below that (`fail_under = 100` in `pyproject.toml`). The

@@ -20,11 +20,16 @@ from dataclasses import asdict, dataclass
 import fast_math
 
 # Odd numbers around 10**18: most composite, some prime, every one a full Miller-Rabin test for a prime
-LARGE = list(range(10**18 + 1, 10**18 + 2001, 2))
-WITNESSES = (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37)
+AROUND = 10**18
+LARGE = tuple(range(AROUND + 1, AROUND + 2001, 2))
+WITNESSES = (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37)  # noqa: WPS221, WPS432 - the first twelve primes
+# How long `measure` lets a timeit round run at the least, and microseconds in a second
+MIN_ELAPSED = 1e-9
+MICROSECONDS = 1e6
 
 
-def python_is_prime(n: int) -> bool:
+# One loop as in the core, with its names: a helper call per witness would slow down the baseline measured
+def python_is_prime(n: int) -> bool:  # noqa: WPS231
     """The same deterministic Miller-Rabin test as the core, in Python."""
     if n < 2:
         return False
@@ -54,8 +59,9 @@ def python_primes_up_to(n: int) -> list[int]:
     composite = bytearray(n + 1)
     for i in range(2, math.isqrt(n) + 1):
         if not composite[i]:
-            composite[i * i :: i] = b"\x01" * len(range(i * i, n + 1, i))
-    return [i for i in range(2, n + 1) if not composite[i]]
+            # The slice assignment is what makes a sieve fast in Python
+            composite[i * i :: i] = b"\x01" * len(range(i * i, n + 1, i))  # noqa: WPS221, WPS362
+    return [candidate for candidate in range(2, n + 1) if not composite[candidate]]
 
 
 def python_fibonacci(n: int) -> int:
@@ -73,12 +79,37 @@ class Case:
     baseline_name: str
 
 
-CASES = [
-    Case("add(2, 3)", lambda: fast_math.add(2, 3), lambda: operator.add(2, 3), "operator.add"),
-    Case("pow(3, 39)", lambda: fast_math.pow(3, 39), lambda: operator.pow(3, 39), "operator.pow"),
-    Case("gcd(2**40, 6**15)", lambda: fast_math.gcd(2**40, 6**15), lambda: math.gcd(2**40, 6**15), "math.gcd"),
-    Case("factorial(20)", lambda: fast_math.factorial(20), lambda: math.factorial(20), "math.factorial"),
-    Case("fibonacci(90)", lambda: fast_math.fibonacci(90), lambda: python_fibonacci(90), "Python loop"),
+CASES = (
+    Case(
+        "add(2, 3)",
+        lambda: fast_math.add(2, 3),
+        lambda: operator.add(2, 3),
+        "operator.add",
+    ),
+    Case(
+        "pow(3, 39)",
+        lambda: fast_math.pow(3, 39),
+        lambda: operator.pow(3, 39),
+        "operator.pow",
+    ),
+    Case(
+        "gcd(2**40, 6**15)",
+        lambda: fast_math.gcd(2**40, 6**15),
+        lambda: math.gcd(2**40, 6**15),
+        "math.gcd",
+    ),
+    Case(
+        "factorial(20)",
+        lambda: fast_math.factorial(20),
+        lambda: math.factorial(20),
+        "math.factorial",
+    ),
+    Case(
+        "fibonacci(90)",
+        lambda: fast_math.fibonacci(90),
+        lambda: python_fibonacci(90),
+        "Python loop",
+    ),
     Case(
         "is_prime, 1000 numbers ~10**18",
         lambda: [fast_math.is_prime(n) for n in LARGE],
@@ -91,11 +122,11 @@ CASES = [
         lambda: python_primes_up_to(10**6),
         "Python sieve",
     ),
-]
+)
 
 
 @dataclass
-class Result:
+class Measurement:
     name: str
     baseline: str
     fast_us: float
@@ -110,40 +141,68 @@ def measure(call: Callable[[], object], repeat: int, budget: float) -> float:
     """The best time of one call in microseconds, over `repeat` rounds of about `budget` seconds each."""
     timer = timeit.Timer(call)
     number, elapsed = timer.autorange()
-    number = max(1, int(number * budget / max(elapsed, 1e-9)))
-    return min(timer.repeat(repeat=repeat, number=number)) / number * 1e6
+    scale = budget / max(elapsed, MIN_ELAPSED)
+    number = max(1, int(number * scale))
+    return min(timer.repeat(repeat=repeat, number=number)) / number * MICROSECONDS
 
 
-def run(repeat: int, budget: float) -> list[Result]:
-    results = []
+def run(repeat: int, budget: float) -> list[Measurement]:
+    measurements = []
     for case in CASES:
         assert case.fast() == case.baseline(), case.name
-        results.append(
-            Result(
+        measurements.append(
+            Measurement(
                 case.name,
                 case.baseline_name,
                 measure(case.fast, repeat, budget),
                 measure(case.baseline, repeat, budget),
             )
         )
-    return results
+    return measurements
 
 
-def show(value: float) -> str:
-    return f"{value:,.3f}" if value < 10 else f"{value:,.0f}"
+def show(micros: float) -> str:
+    return format(micros, ",.3f") if micros < 10 else format(micros, ",.0f")
 
 
-def table(results: list[Result]) -> str:
+def table(measurements: list[Measurement]) -> str:
     lines = [
         "| operation | fast_math, µs | baseline | baseline, µs | speedup |",
         "| --- | ---: | --- | ---: | ---: |",
     ]
-    for result in results:
-        lines.append(
-            f"| `{result.name}` | {show(result.fast_us)} | {result.baseline} | {show(result.baseline_us)} "
-            f"| {result.speedup:.2f}x |"
-        )
+    lines.extend(row(measurement) for measurement in measurements)
     return "\n".join(lines)
+
+
+def row(measurement: Measurement) -> str:
+    fast = show(measurement.fast_us)
+    baseline = show(measurement.baseline_us)
+    speedup = format(measurement.speedup, ".2f")
+    name = f"`{measurement.name}`"
+    cells = " | ".join((name, fast, measurement.baseline, baseline, f"{speedup}x"))
+    return f"| {cells} |"
+
+
+def write_json(path: str, measurements: list[Measurement]) -> None:
+    with open(path, "w", encoding="utf-8") as output:
+        json.dump(
+            {
+                "python": sys.version,
+                "machine": platform.machine(),
+                "system": platform.system(),
+                "results": [{**asdict(measurement), "speedup": measurement.speedup} for measurement in measurements],
+            },
+            output,
+            indent=2,
+        )
+        output.write("\n")
+
+
+def describe() -> str:
+    python = platform.python_version()
+    machine = platform.machine()
+    system = platform.system()
+    return f"Python {python} on {machine}, {system}"
 
 
 def main() -> None:
@@ -154,22 +213,11 @@ def main() -> None:
     args = parser.parse_args()
 
     repeat, budget = (1, 0.01) if args.quick else (args.repeat, 0.2)
-    results = run(repeat, budget)
-    print(f"Python {platform.python_version()} on {platform.machine()}, {platform.system()}\n")
-    print(table(results))
+    measurements = run(repeat, budget)
+    print(describe(), end="\n\n")
+    print(table(measurements))
     if args.json:
-        with open(args.json, "w", encoding="utf-8") as file:
-            json.dump(
-                {
-                    "python": sys.version,
-                    "machine": platform.machine(),
-                    "system": platform.system(),
-                    "results": [{**asdict(result), "speedup": result.speedup} for result in results],
-                },
-                file,
-                indent=2,
-            )
-            file.write("\n")
+        write_json(args.json, measurements)
 
 
 if __name__ == "__main__":

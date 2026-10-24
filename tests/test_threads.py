@@ -12,6 +12,7 @@ import pytest
 import fast_math
 
 THREADS = 8
+CALLS = 64
 
 FREE_THREADED = bool(sysconfig.get_config_var("Py_GIL_DISABLED"))
 
@@ -23,8 +24,8 @@ def work(n: int) -> tuple[int, int, bool, int]:
 
 def test_concurrent_calls() -> None:
     with ThreadPoolExecutor(THREADS) as pool:
-        results = list(pool.map(work, range(64)))
-    assert results == [work(n) for n in range(64)]
+        concurrent = list(pool.map(work, range(CALLS)))
+    assert concurrent == [work(n) for n in range(CALLS)]
 
 
 @pytest.mark.skipif(not FREE_THREADED, reason="the GIL is only off on a free-threaded interpreter")

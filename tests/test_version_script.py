@@ -1,4 +1,4 @@
-import importlib.util
+from importlib import util
 from pathlib import Path
 from types import ModuleType
 
@@ -7,9 +7,9 @@ import pytest
 
 def load() -> ModuleType:
     path = Path(__file__).resolve().parent.parent / "scripts" / "version.py"
-    spec = importlib.util.spec_from_file_location("version_script", path)
+    spec = util.spec_from_file_location("version_script", path)
     assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
+    module = util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 

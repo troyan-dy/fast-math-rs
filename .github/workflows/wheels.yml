@@ -18,19 +18,19 @@ jobs:
           - { runner: ubuntu-latest, target: x86_64, platform: musllinux_1_2, smoke: false }
           - { runner: ubuntu-24.04-arm, target: aarch64, platform: musllinux_1_2, smoke: false }
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
           manylinux: ${{ matrix.platform }}
           args: --release --out dist --interpreter 3.11 3.14t
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v10.3.2
         if: matrix.smoke
       - name: Import the wheels
         if: matrix.smoke
         shell: bash
         run: scripts/smoke.sh dist
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheels-linux-${{ matrix.target }}-${{ matrix.platform }}
           path: dist
@@ -44,8 +44,8 @@ jobs:
           - { runner: macos-15-intel, target: x86_64 }
           - { runner: macos-latest, target: aarch64 }
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: |
             3.11
@@ -54,11 +54,11 @@ jobs:
         with:
           target: ${{ matrix.target }}
           args: --release --out dist --interpreter 3.11 3.14t
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v10.3.2
       - name: Import the wheels
         shell: bash
         run: scripts/smoke.sh dist
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheels-macos-${{ matrix.target }}
           path: dist
@@ -66,8 +66,8 @@ jobs:
   windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: |
             3.11
@@ -76,11 +76,11 @@ jobs:
         with:
           target: x64
           args: --release --out dist --interpreter 3.11 3.14t
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v10.3.2
       - name: Import the wheels
         shell: bash
         run: scripts/smoke.sh dist
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheels-windows-x64
           path: dist
@@ -88,12 +88,12 @@ jobs:
   sdist:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: PyO3/maturin-action@v1
         with:
           command: sdist
           args: --out dist
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheels-sdist
           path: dist

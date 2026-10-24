@@ -13,9 +13,10 @@ install: ## Install the dev dependencies and build the extension into .venv
 	uv sync --locked
 
 .PHONY: lint
-lint: ## Run ruff, mypy, pyright and stubtest on Python; rustfmt and clippy on Rust
+lint: ## Run ruff, wemake-python-styleguide, mypy, pyright and stubtest on Python; rustfmt and clippy on Rust
 	uv run ruff check .
 	uv run ruff format --check .
+	uv run flake8 . --select=WPS
 	uv run mypy
 	uvx $(PYRIGHT)
 	uv run stubtest fast_math
